@@ -1,0 +1,77 @@
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+mybatis.mapperLocations :   classpath:mapper/*.xml
+server:
+  port: 8001
+  servlet:
+    context-path: "/odo"
+
+spring:
+  application:
+    name: tree-data
+  main:
+    allow-bean-definition-overriding: true
+  aop:
+    proxy-target-class: true
+    auto: true
+  datasource:
+    eidp:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://XXXXXXXXXXXXXXXXX:13317/cisp_dev?userUnicode=true&characterEncoding=UTF8&useSSL=false
+      username: XXXX
+      password: XXXXXXX
+      # 驱动配置信息
+      type:  com.alibaba.druid.pool.DruidDataSource
+      # 连接池的配置信息
+      ## 初始化大小，最小，最大
+      initialSize:  5
+      minIdle:  5
+      maxActive:  20
+      ## 配置获取连接等待超时的时间
+      maxWait:  60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis:  60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis:  300000
+      validationQuery: select 1
+      testWhileIdle:  true
+      testOnBorrow:  false
+      testOnReturn:  false
+      poolPreparedStatements:  true
+      maxPoolPreparedStatementPerConnectionSize:  20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters:  stat,log4j2,wall
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+    #        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    mysql:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://XXXXXXXXXXXXXXXXXXXXXXXXX:13317/dual_ache?userUnicode=true&characterEncoding=UTF8&useSSL=false
+      username: XXXXX
+      password: XXXXXXXX
+      # 驱动配置信息
+      type:  com.alibaba.druid.pool.DruidDataSource
+      #连接池的配置信息
+      ## 初始化大小，最小，最大
+      initialSize:  5
+      minIdle:  5
+      maxActive:  20
+      ## 配置获取连接等待超时的时间
+      maxWait:  60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis:  60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis:  300000
+      validationQuery: select 1
+      testWhileIdle:  true
+      testOnBorrow:  false
+      testOnReturn:  false
+      poolPreparedStatements:  true
+      maxPoolPreparedStatementPerConnectionSize:  20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters:  stat,log4j2,wall
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+    #      connectionProperties: druid.stat.mergeSql=true;
+
+logging:
+  config: classpath:log4j-spring.yml

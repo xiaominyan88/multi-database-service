@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hyit.bigdata.odo.dao.mysql.eidp.MysqlEidpMapper">
+    
+    <resultMap id="measureMap" type="data.tree.bean.DevAndMeasurePoint">
+        <id column="name" property="name"/>
+        <id column="devName" property="devName"/>
+        <id column="id" property="measurePointId"/>
+        <id column="meterId" property="meterId"/>
+        <id column="devId" property="devId"/>
+    </resultMap>
+
+    <resultMap id="finalMap" type="HashMap">
+        <result column="sitId" property="sitId"/>
+        <result column="siteType" property="siteType"/>
+        <result column="siteName" property="siteName"/>
+        <result column="supervisor" property="supervisor"/>
+    </resultMap>
+
+    <resultMap id="middleMap" type="HashMap">
+        <result column="root" property="siteId"/>
+        <result column="tab" property="siteTable"/>
+    </resultMap>
+    
+    <resultMap id="deviceMap" type="data.tree.bean.DeviceData" autoMapping="true">
+        <id column="key" property="key" />
+        <id column="name" property="name" />
+    </resultMap>
+
+    <resultMap id="treeMap" type="data.tree.bean.TreeResultBean" autoMapping="true">
+        <id column="node_id" property="nodeId"/>
+        <id column="PARENT_NODE_ID" property="parentNodeId"/>
+        <id column="ORDER_NO" property="orderNo"/>
+        <id column="CLASS_ID" property="classId"/>
+        <id column="NODE_NAME" property="nodeName"/>
+        <id column="NODE_TYPE" property="nodeType"/>
+        <id column="table_name" property="tableName"/>
+        <id column="flag" property="flag"/>
+        <id column="id" property="id"/>
+        <id column="class_name" property="className"/>
+        <id column="parent_class_name" property="parentClassName"/>
+        <id column="parent_id" property="parentId"/>
+        <id column="name" property="name"/>
+        <id column="RUN_STATUS" property="runStatus"/>
+    </resultMap>
+
+    <resultMap id="circuitMap" type="data.tree.bean.CircuitBean" autoMapping="true">
+        <id column="is_circuit" property="isCircuit"/>
+        <id column="type" property="type"/>
+    </resultMap>
+
+    <select id="findNodeId" resultMap="treeMap" parameterType="data.tree.bean.TreeParameterBean">
+        select node_id  from cispplatform.md_treeview_node
+        where class_id  IN
+        (select class_id from cispplatform.md_table where table_name = #{tableName})
+        AND TREEVIEW_ID = '5900'
+    </select>
+    <select id="findBelongNode" resultMap="treeMap" parameterType="data.tree.bean.TreeParameterBean">
+       select PARENT_NODE_ID,NODE_ID,ORDER_NO from cispplatform.md_treeview_node_belong
+       where PARENT_NODE_ID = #{parentNodeId}
+    </select>
+    <select id="findChildNodeInformation" resultMap="treeMap"
+            parameterType="com.hyit.bigdata.odo.bean.TreeParameterBean">
+       select NODE_ID,CLASS_ID,NODE_NAME,NODE_TYPE from cispplatform.md_treeview_node
+       where node_id = #{nodeId}
+    </select>
+    <select id="findChildNodeTable" resultMap="treeMap" parameterType="data.tree.bean.TreeParameterBean">
+       select CLASS_ID,table_name from cispplatform.md_table
+       where class_id = #{classId}
+    </select>
+    <select id="findFlagStatus" resultMap="treeMap" parameterType="data.tree.bean.TreeParameterBean">
+       select 1 flag from information_schema.columns
+       where table_name = #{tableName} and column_name = 'RUN_STATUS' limit 1
+    </select>
+    <select id="findDeviceData" resultMap="treeMap" parameterType="data.tree.bean.TreeParameterBean">
+        select id, class_name,parent_class_name,parent_id,name
+        <if test="flag != null">,RUN_STATUS </if>
+        from cisp_dev.${tableName} where parent_id in
+        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="getPoint" resultType="java.lang.String">
+        select id from cispplatform.me_conf_measurepoint where
+        <choose>
+            <when test="className.equals('MeterPSR')">
+                end_dev_id = #{devId}
+            </when>
+            <otherwise>
+                dev_id = #{devId}
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getTransformerPoint" resultType="java.lang.String">
+        select id from cispplatform.me_conf_measurepoint where end_dev_id in
+        (select associatedmeter from cisp_dev.dev_pwtransformerpsr where id = #{devId})
+    </select>
+    <select id="isCircuit" resultMap="circuitMap" parameterType="data.tree.bean.DeviceData">
+        select
+        <choose>
+            <when test="className.equals('DYBayPSR')">
+                is_circuit
+            </when>
+            <otherwise>
+                `type`,is_circuit
+            </otherwise>
+        </choose>
+         from dev_${className} where id = #{id}
+    </select>
+    <select id="findCodeMap" resultType="java.util.HashMap">
+        select `value`,`name` from cispplatform.bp_code where code_type =#{codeType}
+    </select>
+    <select id="findDeviceTypeAndClassName" parameterType="java.lang.String" resultMap="deviceMap">
+        select 
+        <choose>
+            <when test="className.equals('PWBayPSR')">
+                concat(class_name,'-',`type`) `key`,`type` `name` from cisp_dev.dev_PWBayPSR where id = #{devId}
+            </when>
+            <otherwise>
+                class_name `key`,class_desc `name` from cispplatform.md_class where class_name = #{className}
+            </otherwise>
+        </choose>
+    </select>
+    <select id="findMeasureIdFromDyLine" resultType="java.lang.String">
+         select ID from cispplatform.me_conf_measurepoint where DEV_ID
+         <choose>
+             <when test="className.equals('LAMPSTATION')">
+                 in (select id from dev_dylinepsr where 1=1 and ROOT_ID = #{devId})
+             </when>
+             <when test="className.equals('SUBADMINISTRATIONREGION')">
+                 in (select id from dev_dylinepsr where 1=1 and parent_id = #{devId})
+             </when>
+             <when test="className.equals('ADMINISTRATIONREGION')">
+                 in (select id from dev_dylinepsr where 1=1 and parent_id in (select id from dev_SubAdministrationRegion where parent_id =#{devId}))
+             </when>
+             <otherwise>
+                 = #{devId}
+             </otherwise>
+         </choose>
+    </select>
+    <select id="findSiteInfo" parameterType="java.lang.String" resultMap="middleMap">
+         select root,concat('dev_',root_type) tab from cispplatform.me_conf_measurepoint where dev_id = #{id}
+    </select>
+    <select id="findSiteAllInfomation" parameterType="java.util.Map" resultMap="finalMap">
+        select root_id sitId,root_class_name sitType,`name` siteName,supervisor supervisor from cisp_dev.${siteTable} where root_id = #{siteId}
+    </select>
+    <select id="findMeasureIdAndNameMap" resultType="java.util.HashMap">
+        select id,name from cispplatform.me_conf_measurepoint where id in
+        <foreach collection="measurePointIds" item="measurePointId" index="index" open="(" close=")" separator=",">
+            #{measurePointId}
+        </foreach>
+    </select>
+    <select id="getMeterAndPoint" resultMap="measureMap">
+        select b.id as id,b.name as devName,b.dev_id as devId,a.id as meterId,a.name as name from cisp_dev.dev_meterpsr a
+        inner join 
+        cispplatform.me_conf_measurepoint b 
+        on a.id = b.end_dev_id and a.POSITION = '10' and a.ROOT_ID = #{stationId} 
+        union all 
+        select c.id as id,c.name as devName,c.dev_id as devId,'' as meterId,'' as name from cispplatform.me_conf_measurepoint c
+        where not EXISTS (
+        select b.id id,b.name devName,b.dev_id devId,a.id meterId,a.name name,a.root_id rootId from cisp_dev.dev_meterpsr a
+        inner join 
+        cispplatform.me_conf_measurepoint b 
+        on a.id = b.end_dev_id and a.POSITION = '10' and a.ROOT_ID = #{stationId} 
+        ) and c.ISCALCULATE = 1 and c.root = #{stationId};
+    </select>
+    <select id="getInverterPoints" resultType="java.lang.String">
+        select id from cispplatform.me_conf_measurepoint where dev_id in(select id from cisp_dev.dev_inverterpsr where root_id = #{stationId})
+    </select>
+    <select id="findEnergyType" resultType="java.lang.String">
+        select ENERGY_TYPE from cisp_dev.dev_${type} where id = #{stationId}
+    </select>
+</mapper>

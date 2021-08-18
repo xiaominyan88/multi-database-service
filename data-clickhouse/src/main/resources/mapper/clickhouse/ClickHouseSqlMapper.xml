@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="data.clickhouse.dao.clickhouse.ClickHouseMapper">
+
+    <!--sql循环查询条件-->
+    <sql id="listMeasurePointIds">
+        MEASUREPOINTID IN
+        <foreach collection="measurePointIds" item="measurePointId" index="index" open="(" close=")" separator=",">
+            #{measurePointId}
+        </foreach>
+    </sql>
+    <sql id="listMeasureTags">
+        MEASURETAG IN
+        <foreach collection="measureTags" item="measureTag" index="index" open="(" close=")" separator=",">
+            #{measureTag}
+        </foreach>
+    </sql>
+    <sql id="listSampleTimes">
+        SAMPLETIME IN
+        <foreach collection="times" item="time" index="index" open="(" close=")" separator=",">
+            #{time}
+        </foreach>
+    </sql>
+    <sql id="sampleTimeExtent">
+        SAMPLETIME <![CDATA[ >=  ]]>  #{startTime} AND SAMPLETIME <![CDATA[ <=  ]]>   #{endTime}
+    </sql>
+    <sql id="measurePointIdExtent">
+        measurepointid <![CDATA[ =  ]]> #{measurePointId}
+    </sql>
+    <sql id="measureTagExtent">
+        measuretag <![CDATA[ =  ]]> #{measureTag}
+    </sql>
+</mapper>

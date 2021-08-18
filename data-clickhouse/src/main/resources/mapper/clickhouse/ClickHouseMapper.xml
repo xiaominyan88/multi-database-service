@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="data.clickhouse.dao.clickhouse.ClickHouseMapper">
+
+    <resultMap id="sumAvgMinMaxResultMap" type="data.clickhouse.bean.ResponseResultVo" autoMapping="true">
+        <id column="measureTag" property="measureTag"></id>
+        <!--collection:定义子对象集合映射-->
+        <!--association:完成子对象的映射-->
+        <!--property:子对象在父对象中的属性名-->
+        <!--javaType:子对象的java类型-->
+        <!--autoMapping:完成子对象的自动映射，若开启驼峰，则按驼峰匹配-->
+        <collection property="responseDataVo" javaType="List" ofType="data.clickhouse.bean.ResponseDataVo" autoMapping="true">
+            <result column="avgV" property="avgValue"></result>
+            <result column="maxV" property="maxValue"></result>
+            <result column="minV" property="minValue"></result>
+            <result column="sumV" property="sumValue"></result>
+            <result column="sampleTime" property="date"></result>
+            <result column="numberValue" property="numberValue"></result>
+            <result column="measurePointId" property="measurePointId"></result>
+            <result column="tine" property="date"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectCollectionValueFromTimeZoneGroupByTime" resultMap="sumAvgMinMaxResultMap"
+            parameterType="com.hyit.bigdata.clickhouse.bean.RequestParamVo">
+        -- 打印入参
+        <!--<bind name="print" value="@com.hyit.bigdata.utils.PrintParamUtils@print(_parameter)"></bind>-->
+        SELECT
+        <include refid="sumTimeTag"></include>
+        FROM
+        (SELECT *
+        FROM ${tableName}
+        WHERE
+        <include refid="listMeasurePointIds"></include>
+        AND
+        <include refid="listMeasureTags"></include>
+        AND
+        <include refid="sampleTimeExtent"></include>
+        ) tmp
+        <include refid="valueGreaterThanZero"></include>
+        GROUP BY tine,measureTag
+    </select>
+
+    <select id="selectSumValueForMinAvgMaxFromTimeZoneAndTJLTableGroupByTimeTag" resultMap="sumAvgMinMaxResultMap"
+            parameterType="data.clickhouse.bean.RequestParamVo">
+        -- 打印入参
+        <!--<bind name="print" value="@com.hyit.bigdata.utils.PrintParamUtils@print(_parameter)"></bind>-->
+        SELECT
+        <include refid="maxMinAvgTagTime"></include>
+        FROM
+        (SELECT *
+        FROM ${tableName}
+        WHERE
+        <include refid="listMeasurePointIds"></include>
+        AND
+        <include refid="listMeasureTags"></include>
+        AND
+        <include refid="sampleTimeExtent"></include>
+        ) tmp
+        <include refid="valueGreaterThanZero"></include>
+        GROUP BY sampleTime,measureTag
+    </select>
+
+
+
+</mapper>

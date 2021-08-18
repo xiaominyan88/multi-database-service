@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="data.clickhouse.dao.clickhouse.ClickHouseMapper">
+    <sql id="valueGreaterThanZero">
+        <if test="filterStation">
+            WHERE tmp.value1 > 0
+<!-- 华益新在clickhouse中建的小时表，天表，月表和年表的字段全都和15分钟表保持了一致，所以需要对sql进行修改 -->
+<!--            <choose>-->
+<!--                <when test="tableName.toUpperCase().contains('15MIN')||tableName.toUpperCase().contains('LJ')">-->
+<!--                    and value1 > 0-->
+<!--                </when>-->
+<!--                <otherwise>-->
+<!--                    and value1>0 and  AVG_VALUE > 0 and MAX_VALUE>0 and  MIN_VALUE>0-->
+<!--                </otherwise>-->
+<!--            </choose>-->
+
+        </if>
+    </sql>
+
+    <sql id="sumTimeTag">
+        round(SUM(tmp.VALUE1),2) numberValue,
+        <if test="isStationId.toUpperCase().contains('STATIONID')">
+            <choose>
+                <when test="tableName.toUpperCase().contains('LJ')">
+                </when>
+                <otherwise>
+                    round(AVG(tmp.VALUE1),2) avgV,round(MAX(tmp.VALUE1),2) maxV,round(MIN(tmp.VALUE1),2) minV ,
+<!--                    <choose>-->
+<!--                        <when test="tableName.toUpperCase().contains('15MIN')">-->
+<!--                            round(AVG(VALUE1),2) AVGV,round(MAX(VALUE1),2) MAXV,round(MIN(VALUE1),2) MINV ,-->
+<!--                        </when>-->
+<!--                        <otherwise>-->
+<!--                            round(AVG(AVG_VALUE),2) AVGV , round(MAX(MAX_VALUE),2) MAXV,round(MIN(MIN_VALUE),2) MINV ,-->
+<!--                        </otherwise>-->
+<!--                    </choose>-->
+                </otherwise>
+            </choose>
+        </if>
+        <if test="dateType!=null">
+            substring(tmp.SAMPLETIME,${dateType}) tine,
+        </if>
+        tmp.MEASURETAG measureTag
+    </sql>
+
+    <sql id="maxMinAvgTagTime">
+         tmp.MEASUREPOINTID measurePointId,round(MAX(tmp.VALUE1),2) maxV,round(MIN(tmp.VALUE1),2) minV,round(AVG(tmp.VALUE1),2) avgV,tmp.MEASURETAG measureTag,tmp.SAMPLETIME sampleTime
+    </sql>
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hyit.bigdata.odo.dao.mysql.zhny.MysqlMapper">
+
+    <select id="checkPoint" resultType="java.lang.Integer">
+        select count(1) num from station_measurepointid_exist where measurepointid in
+        <foreach collection="measurePointIds" item="measurePointId" index="index" open="(" close=")" separator=",">
+            #{measurePointId}
+        </foreach>
+    </select>
+
+    <select id="checkPointTags" resultType="java.lang.Integer">
+        select count(1) num from station_measurepointid_exist where measurepointid in
+        <foreach collection="measurePointIds" item="measurePointId" index="index" open="(" close=")" separator=",">
+            #{measurePointId}
+        </foreach> and measuretag in (${tags})
+    </select>
+
+</mapper>

@@ -1,0 +1,131 @@
+#mybatis
+mybatis.type-aliases-package:  com.hyit.bigdata.clickhouse.bean
+mybatis.configuration.map-underscore-to-camel-case:  true
+mybatis.configuration.default-fetch-size:  100
+mybatis.configuration.default-statement-timeout:  3000
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+mybatis.mapperLocations :   classpath:mapper/*.xml
+server:
+  port: 8090
+
+#数据源配置
+spring:
+  application:
+    name: data-clickhouse
+  main:
+    allow-bean-definition-overriding: true
+  aop:
+    proxy-target-class: true
+    auto: true
+  datasource:
+    clickhouse:
+      driver-class-name: ru.yandex.clickhouse.ClickHouseDriver
+      url: jdbc:clickhouse://XXXXXXX:8123/hy_db_cluster
+      username: default
+      password:
+      # 驱动配置信息
+      type:  com.alibaba.druid.pool.DruidDataSource
+      #连接池的配置信息
+      ## 初始化大小，最小，最大
+      initialSize:  5
+      minIdle:  5
+      maxActive:  20
+      ## 配置获取连接等待超时的时间
+      maxWait:  60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis:  60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis:  300000
+      validationQuery:  select * from ycl_tjl_15min_test limit 1
+      testWhileIdle:  true
+      testOnBorrow:  false
+      testOnReturn:  false
+      poolPreparedStatements:  true
+      maxPoolPreparedStatementPerConnectionSize:  20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters:  stat,log4j2
+
+    hive:
+      driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+      url: jdbc:hive2://hdp-node4:2181,hdp-node5:2181,hdp-node6:2181/default;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2
+      username: root
+      password:
+      # 驱动配置信息
+      type:  com.alibaba.druid.pool.DruidDataSource
+      #连接池的配置信息
+      ## 初始化大小，最小，最大
+      initialSize:  5
+      minIdle:  5
+      maxActive:  20
+      ## 配置获取连接等待超时的时间
+      maxWait:  60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis:  60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis:  300000
+      validationQuery: select *  from eidp.app_zhny_ycl_tjl_15min  limit 1
+      testWhileIdle:  true
+      testOnBorrow:  false
+      testOnReturn:  false
+      poolPreparedStatements:  true
+      maxPoolPreparedStatementPerConnectionSize:  20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters:  stat,log4j2
+
+    mysql:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://XXXXXXXXXX:3306/zhnyfw_zbjs_db?userUnicode=true&characterEncoding=UTF8&useSSL=false
+      username: XXXXXXX
+      password: XXXXXXXX
+      # 驱动配置信息
+      type:  com.alibaba.druid.pool.DruidDataSource
+      #连接池的配置信息
+      ## 初始化大小，最小，最大
+      initialSize:  5
+      minIdle:  5
+      maxActive:  20
+      ## 配置获取连接等待超时的时间
+      maxWait:  60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis:  60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis:  300000
+      validationQuery: select 1
+      testWhileIdle:  true
+      testOnBorrow:  false
+      testOnReturn:  false
+      poolPreparedStatements:  true
+      maxPoolPreparedStatementPerConnectionSize:  20
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters:  stat,log4j2,wall
+
+
+
+logging:
+  config: classpath:log4j-spring.yml
+
+info:
+  app:
+    name: ${spring.application.name}
+  company:
+    name: www.huayun.com
+  build:
+    artifactId: $project.artifactId$
+    version: $project.version$
+management:
+  endpoint:
+    health:
+      show-details: always
+swagger2:
+  status: true
+  basePackage: data.clickhouse.controller
+  title: 系统API文档
+  api:
+    version: 2.0
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /clickhouse-api
